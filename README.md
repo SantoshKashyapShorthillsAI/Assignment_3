@@ -1,7 +1,6 @@
 # Assignment_3
 Assignment 3 : Python
 
-```markdown
 ## Installation
 
 1. **Clone the repository**:
@@ -60,7 +59,3 @@ Assignment 3 : Python
 - **PDF** (`.pdf`): Extracts text, links, images, and tables.
 - **DOCX** (`.docx`): Extracts text, links, images, and tables.
 - **PPTX** (`.pptx`): Extracts text, links, images, and tables.
-
----
-
-```
