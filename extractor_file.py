@@ -364,34 +364,34 @@ if __name__ == "__main__":
     storage.save_images(images_data)
     storage.save_tables(tables_data)
 
-    #  # docs extraction example
-    # docx_loader = DOCXLoader('Hello_World.docx')
-    # extractor2 = DataExtractor(docx_loader)
-    # text_data2 = extractor2.extract_text()
-    # link_data2 = extractor2.extract_links()
-    # images_data2 = extractor2.extract_images()
-    # tables_data2 = extractor2.extract_tables()
+     # docs extraction example
+    docx_loader = DOCXLoader('Hello_World.docx')
+    extractor2 = DataExtractor(docx_loader)
+    text_data2 = extractor2.extract_text()
+    link_data2 = extractor2.extract_links()
+    images_data2 = extractor2.extract_images()
+    tables_data2 = extractor2.extract_tables()
 
 
-    # # docs data storage
-    # storage = FileStorage('output2')
-    # storage.save_text(text_data2)
-    # storage.save_links(link_data2)
-    # storage.save_images(images_data2)
-    # storage.save_tables(tables_data2)
+    # docs data storage
+    storage = FileStorage('output2')
+    storage.save_text(text_data2)
+    storage.save_links(link_data2)
+    storage.save_images(images_data2)
+    storage.save_tables(tables_data2)
 
-    #  # ppptx extraction example
-    # ppt_loader = PPTLoader('ppt_example.pptx')
-    # extractor3 = DataExtractor(ppt_loader)
-    # text_data3 = extractor3.extract_text()
-    # link_data3 = extractor3.extract_links()
-    # images_data3 = extractor3.extract_images()
-    # tables_data3 = extractor3.extract_tables()
+     # ppptx extraction example
+    ppt_loader = PPTLoader('ppt_example.pptx')
+    extractor3 = DataExtractor(ppt_loader)
+    text_data3 = extractor3.extract_text()
+    link_data3 = extractor3.extract_links()
+    images_data3 = extractor3.extract_images()
+    tables_data3 = extractor3.extract_tables()
 
 
-    # # docs data storage
-    # storage = FileStorage('output3')
-    # storage.save_text(text_data3)
-    # storage.save_links(link_data3)
-    # storage.save_images(images_data3)
-    # storage.save_tables(tables_data3)
+    # docs data storage
+    storage = FileStorage('output3')
+    storage.save_text(text_data3)
+    storage.save_links(link_data3)
+    storage.save_images(images_data3)
+    storage.save_tables(tables_data3)
