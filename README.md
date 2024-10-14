@@ -1,7 +1,6 @@
 # Assignment_3
 Assignment 3 : Python
 
-```markdown
 ## Installation
 
 1. **Clone the repository**:
@@ -49,7 +48,7 @@ Assignment 3 : Python
    python3 extractor.py
    ```
 
-   Prompted to enter the filename (with extension) of the document to process. Ensure the file is located in the appropriate directory (specified in the code).
+   Prompted to enter the filename (with extension) of the document to process. Ensure the file is located in the appropriate directory i.e Documents.
 
 2. **Supported file types**: It supports `PDF`, `DOCX`, and `PPTX` files. Once processed, the extracted data will be saved both locally and in the MySQL database.
 
@@ -60,7 +59,3 @@ Assignment 3 : Python
 - **PDF** (`.pdf`): Extracts text, links, images, and tables.
 - **DOCX** (`.docx`): Extracts text, links, images, and tables.
 - **PPTX** (`.pptx`): Extracts text, links, images, and tables.
-
----
-
-```
