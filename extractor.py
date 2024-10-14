@@ -149,13 +149,24 @@ class DataExtractor:
         link_data = []
         for slide_num, slide in enumerate(self.file_loader.presentation.slides):
             for shape in slide.shapes:
-                if shape.has_text_frame and hasattr(shape, 'hyperlink') and shape.hyperlink.address:
+                # Check if the shape contains text and has a hyperlink attribute
+                if shape.has_text_frame:
+                    for paragraph in shape.text_frame.paragraphs:
+                        for run in paragraph.runs:
+                            if run.hyperlink and run.hyperlink.address:
+                                link_data.append({
+                                    "slide_number": slide_num + 1,
+                                    "url": run.hyperlink.address
+                                })
+                # In case the shape has a hyperlink directly (without being in the text frame)
+                elif hasattr(shape, "hyperlink") and shape.hyperlink.address:
                     link_data.append({
                         "slide_number": slide_num + 1,
                         "url": shape.hyperlink.address
                     })
+        
         return link_data
-    
+
 
     def extract_images(self):
         """Extract images from the document."""
@@ -338,36 +349,49 @@ class FileStorage(Storage):
 
 if __name__ == "__main__":
     pdf_loader = PDFLoader('Hello_World.pdf')
-    docx_loader = DOCXLoader('Hello_World.docx')
-    #ppt_loader = PPTLoader('example.pptx')
 
     # # PDF extraction example
     extractor = DataExtractor(pdf_loader)
     text_data = extractor.extract_text()
     link_data = extractor.extract_links()
     images_data = extractor.extract_images()
-    #tables_data=extractor.extract_tables()
+    tables_data=extractor.extract_tables()
 
      # pdf data storage
-    storage = FileStorage('output')
+    storage = FileStorage('output1')
     storage.save_text(text_data)
     storage.save_links(link_data)
     storage.save_images(images_data)
-    # #storage.save_tables(tables_data)
+    storage.save_tables(tables_data)
 
-     # docs extraction example
-    extractor2 = DataExtractor(docx_loader)
-    text_data2 = extractor2.extract_text()
-    link_data2 = extractor2.extract_links()
-    images_data2 = extractor2.extract_images()
-    tables_data2 = extractor2.extract_tables()
+    #  # docs extraction example
+    # docx_loader = DOCXLoader('Hello_World.docx')
+    # extractor2 = DataExtractor(docx_loader)
+    # text_data2 = extractor2.extract_text()
+    # link_data2 = extractor2.extract_links()
+    # images_data2 = extractor2.extract_images()
+    # tables_data2 = extractor2.extract_tables()
 
 
-    # docs data storage
-    storage = FileStorage('output2')
-    storage.save_text(text_data2)
-    storage.save_links(link_data2)
-    storage.save_images(images_data2)
-    storage.save_tables(tables_data2)
+    # # docs data storage
+    # storage = FileStorage('output2')
+    # storage.save_text(text_data2)
+    # storage.save_links(link_data2)
+    # storage.save_images(images_data2)
+    # storage.save_tables(tables_data2)
 
-    # Similar usage for DOCX and PPT extraction.
+    #  # ppptx extraction example
+    # ppt_loader = PPTLoader('ppt_example.pptx')
+    # extractor3 = DataExtractor(ppt_loader)
+    # text_data3 = extractor3.extract_text()
+    # link_data3 = extractor3.extract_links()
+    # images_data3 = extractor3.extract_images()
+    # tables_data3 = extractor3.extract_tables()
+
+
+    # # docs data storage
+    # storage = FileStorage('output3')
+    # storage.save_text(text_data3)
+    # storage.save_links(link_data3)
+    # storage.save_images(images_data3)
+    # storage.save_tables(tables_data3)
