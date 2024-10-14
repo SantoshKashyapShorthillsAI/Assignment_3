@@ -234,7 +234,7 @@ class DataExtractor:
     def _extract_pdf_tables_with_plumber(self):
         """Extract tables from PDF using pdfplumber."""
         table_data = []
-        with pdfplumber.open(self.file_loader.filepath) as pdf:
+        with pdfplumber.open(self.file_loader.file_path) as pdf:
             for page_num, page in enumerate(pdf.pages):
                 tables = page.extract_tables()  # Extract tables from each page
                 for table in tables:
