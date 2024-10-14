@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
-import fitz  # PyMuPDF for PDFs
+import fitz
 import docx
 from pptx import Presentation
+import os
+import csv
+import pdfplumber
+import mysql.connector
 
 
 class FileLoader(ABC):
@@ -60,8 +64,6 @@ class PPTLoader(FileLoader):
         self.presentation = Presentation(self.file_path)
         return self.presentation
 
-import pdfplumber
-
 class DataExtractor:
     def __init__(self, file_loader: FileLoader):
         self.file_loader = file_loader
@@ -105,9 +107,11 @@ class DataExtractor:
             for shape in slide.shapes:
                 if hasattr(shape, "text"):
                     slide_text.append(shape.text)
+            
+            # Join the slide text list into a single string separated by newlines
             text_data.append({
                 "slide_number": slide_num + 1,
-                "text": slide_text
+                "text": "\n".join(slide_text)  # Join text list into a single string
             })
         return text_data
 
@@ -140,7 +144,7 @@ class DataExtractor:
             for run in para.runs:
                 if run.font.color and run.text.startswith('http'):
                     link_data.append({
-                        "text": run.text,
+                        "url": run.text,
                         "style": para.style.name
                     })
         return link_data
@@ -272,9 +276,6 @@ class DataExtractor:
                         "table": table_rows
                     })
         return table_data
-    
-
-from abc import ABC, abstractmethod
 
 class Storage(ABC):
     """Abstract class for storing extracted data."""
@@ -299,9 +300,6 @@ class Storage(ABC):
         """Save extracted links."""
         pass
 
-
-import os
-import csv
 
 class FileStorage(Storage):
     """Concrete class for storing extracted data to files."""
@@ -347,51 +345,136 @@ class FileStorage(Storage):
                 url = link.get('url', 'No URL')  # Default to 'No URL' if 'url' key is missing
                 f.write(f"{text} -> {url}\n")
 
+class MySQLStorage(Storage):
+    def __init__(self, db_config):
+        self.connection = mysql.connector.connect(**db_config)
+        self.cursor = self.connection.cursor()
+        self.create_tables()
+
+    def create_tables(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS text_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                content TEXT NOT NULL,
+                page_number INT
+            )
+        ''')
+
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS images_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                image_data LONGBLOB NOT NULL,
+                image_extension VARCHAR(10),
+                page_number INT
+            )
+        ''')
+
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tables_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                table_data TEXT NOT NULL,
+                page_number INT
+            )
+        ''')
+
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS links_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                url TEXT NOT NULL,
+                page_number INT
+            )
+        ''')
+        self.connection.commit()
+
+    def save_text(self, text_data):
+        for item in text_data:
+            self.cursor.execute('''
+                INSERT INTO text_data (content, page_number) VALUES (%s, %s)
+            ''', (item.get("text", ""), item.get("slide_number", None)))  # Use "slide_number" instead of "page_number"
+        self.connection.commit()
+
+
+    def save_images(self, images_data):
+        for item in images_data:
+            self.cursor.execute('''
+                INSERT INTO images_data (image_data, image_extension, page_number) VALUES (%s, %s, %s)
+            ''', (item["image_data"], item["image_extension"], item.get("page_number", None)))
+        self.connection.commit()
+
+    def save_tables(self, tables_data):
+        for item in tables_data:
+            self.cursor.execute('''
+                INSERT INTO tables_data (table_data, page_number) VALUES (%s, %s)
+            ''', (str(item["table"]), item.get("page_number", None)))
+        self.connection.commit()
+
+    def save_links(self, links_data):
+        for item in links_data:
+            self.cursor.execute('''
+                INSERT INTO links_data (url, page_number) VALUES (%s, %s)
+            ''', (item["url"], item.get("page_number", None)))
+        self.connection.commit()
+
+    def close(self):
+        self.cursor.close()
+        self.connection.close()                
+
+class Processing:
+    def process_file(loader_class, file_path, output_folder, db_config):
+        loader = loader_class(file_path)
+        extractor = DataExtractor(loader)
+
+        # Extract data
+        text_data = extractor.extract_text()
+        link_data = extractor.extract_links()
+        images_data = extractor.extract_images()
+        tables_data = extractor.extract_tables()
+
+        # Save to file storage
+        file_storage = FileStorage(output_folder)
+        file_storage.save_text(text_data)
+        file_storage.save_links(link_data)
+        file_storage.save_images(images_data)
+        file_storage.save_tables(tables_data)
+
+        # Save to MySQL storage
+        mysql_storage = MySQLStorage(db_config)
+        mysql_storage.save_text(text_data)
+        mysql_storage.save_images(images_data)
+        mysql_storage.save_tables(tables_data)
+        mysql_storage.save_links(link_data)
+        mysql_storage.close()
+
+
 if __name__ == "__main__":
-    pdf_loader = PDFLoader('Hello_World.pdf')
+    # Take relative file path input from the user
+    file_path = input("Enter the relative path to the file (with extension): ").strip()
+    
+    # Check if the relative path is valid
+    if not os.path.isfile(file_path):
+        print(f"The file at the path '{file_path}' does not exist. Please provide a valid relative path.")
+    else:
+        # Extract the file extension
+        file_extension = file_path.split('.')[-1].lower() if '.' in file_path else ''
 
-    # # PDF extraction example
-    extractor = DataExtractor(pdf_loader)
-    text_data = extractor.extract_text()
-    link_data = extractor.extract_links()
-    images_data = extractor.extract_images()
-    tables_data=extractor.extract_tables()
+        # Map file extensions to their corresponding loader classes and output folders
+        file_map = {
+            'pdf': (PDFLoader, '/home/shtlp_0103/Assignment_3/Output/output1'),
+            'docx': (DOCXLoader, '/home/shtlp_0103/Assignment_3/Output/output2'),
+            'pptx': (PPTLoader, '/home/shtlp_0103/Assignment_3/Output/output3')
+        }
 
-     # pdf data storage
-    storage = FileStorage('output1')
-    storage.save_text(text_data)
-    storage.save_links(link_data)
-    storage.save_images(images_data)
-    storage.save_tables(tables_data)
+        # Database configuration
+        db_config = {
+            'user': 'root',
+            'password': 'santosh25',
+            'host': 'localhost',
+            'database': 'sql_storage',
+        }
 
-     # docs extraction example
-    docx_loader = DOCXLoader('Hello_World.docx')
-    extractor2 = DataExtractor(docx_loader)
-    text_data2 = extractor2.extract_text()
-    link_data2 = extractor2.extract_links()
-    images_data2 = extractor2.extract_images()
-    tables_data2 = extractor2.extract_tables()
-
-
-    # docs data storage
-    storage = FileStorage('output2')
-    storage.save_text(text_data2)
-    storage.save_links(link_data2)
-    storage.save_images(images_data2)
-    storage.save_tables(tables_data2)
-
-     # ppptx extraction example
-    ppt_loader = PPTLoader('ppt_example.pptx')
-    extractor3 = DataExtractor(ppt_loader)
-    text_data3 = extractor3.extract_text()
-    link_data3 = extractor3.extract_links()
-    images_data3 = extractor3.extract_images()
-    tables_data3 = extractor3.extract_tables()
-
-
-    # docs data storage
-    storage = FileStorage('output3')
-    storage.save_text(text_data3)
-    storage.save_links(link_data3)
-    storage.save_images(images_data3)
-    storage.save_tables(tables_data3)
+        # Check if the file extension is valid
+        if file_extension in file_map:
+            loader_class, output_folder = file_map[file_extension]
+            Processing.process_file(loader_class, file_path, output_folder, db_config)
+        else:
+            print("Unsupported file type. Please enter a valid filename with a supported extension (pdf, docx, pptx).")

@@ -62,12 +62,12 @@ title = slide3.shapes.title
 title.text = "Image Example"
 
 # Add an image (Make sure you have an image in the same directory as the script)
-img_path = "apple.jpeg"  # Update with your image path
+img_path = "/home/shtlp_0103/Assignment_3/dummydocs/apple.jpeg"  # Update with your image path
 left = Inches(1)
 top = Inches(2)
 height = Inches(3)
 slide3.shapes.add_picture(img_path, left, top, height=height)
 
 # Save the presentation
-presentation.save('ppt_example.pptx')
+presentation.save('sample.pptx')
 print("Presentation created successfully!")

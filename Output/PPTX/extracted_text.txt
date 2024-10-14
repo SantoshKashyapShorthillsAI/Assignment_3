@@ -1,0 +1,3 @@
+{'slide_number': 1, 'text': "PowerPoint with Links, Text, Table, and Images\nThis is a Python-generated PowerPoint with multiple elements.\nClick here to visit Python's official website"}
+{'slide_number': 2, 'text': 'Table Example'}
+{'slide_number': 3, 'text': 'Image Example'}
