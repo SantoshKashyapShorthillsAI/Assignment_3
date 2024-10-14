@@ -1,0 +1,1 @@
+{'page_number': 1, 'text': 'Hello World\nhttps://www.w3schools.com/python/python_iterators.asp#:~:text=An\n%20iterator%20is%20an%20object,)%20and%20__next__()%20.\nA\nB\n10\n78\n11\n90\n12\n23\n'}
