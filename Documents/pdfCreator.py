@@ -23,11 +23,7 @@ pdf.multi_cell(0, 10, txt="This is an example of a PDF file that includes text, 
 
 # Add first image
 pdf.ln(10)
-pdf.image("apple.jpeg", x=50, y=60, w=100)  # Ensure this image path is correct
-
-# Add second image
-pdf.ln(10)  # Add a little space before the next image
-pdf.image("banana.jpeg", x=50, y=160, w=100)  # Ensure this image path is correct
+pdf.image("/home/shtlp_0103/Assignment_3/Documents/apple.jpeg", x=50, y=60, w=100)  # Ensure this image path is correct
 
 # Add a table
 pdf.ln(85)  # Adjust for spacing after the images

@@ -449,7 +449,7 @@ class Processing:
 if __name__ == "__main__":
     
     # Define the base directory where the files are located
-    base_dir = "/home/shtlp_0103/Assignment_3/dummydocs/"
+    base_dir = "/home/shtlp_0103/Assignment_3/Documents/"
 
     # Take filename input from the user
     file_name = input("Enter the filename (with extension): ").strip()

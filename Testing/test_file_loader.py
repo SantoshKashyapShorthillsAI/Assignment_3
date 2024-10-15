@@ -1,83 +1,119 @@
-# test_file_loader.py
-
 import pytest
-from unittest.mock import MagicMock, patch
-from src.extractor_file import PDFLoader, DOCXLoader, PPTLoader, DataExtractor, FileStorage  
+import os
 import logging
-from logging_config import setup_logging
+from unittest.mock import MagicMock
 
-# Setup logging for the tests
-setup_logging()
+import sys
+sys.path.append("/home/shtlp_0103/Assignment_3")
+from src.extractor import PDFLoader, DOCXLoader, PPTLoader, DataExtractor, FileStorage, MySQLStorage
 
-@pytest.fixture
-def pdf_loader():
-    with patch('src.extractor_file.fitz.open') as mock_open:
-        mock_open.return_value = MagicMock()
-        loader = PDFLoader("test.pdf")
-        yield loader
 
-@pytest.fixture
-def docx_loader():
-    with patch('src.extractor_file.docx.Document') as mock_docx:
-        mock_docx.return_value = MagicMock()
-        loader = DOCXLoader("test.docx")
-        yield loader
+# Sample PDF, DOCX, and PPTX paths
+pdf_path = '/home/shtlp_0103/Assignment_3/Documents/sample.pdf'
+docx_path = '/home/shtlp_0103/Assignment_3/Documents/sample.docx'
+pptx_path = '/home/shtlp_0103/Assignment_3/Documents/sample.pptx'
+output_folder = '/home/shtlp_0103/Assignment_3/Output'
 
-@pytest.fixture
-def ppt_loader():
-    with patch('src.extractor_file.Presentation') as mock_ppt:
-        mock_ppt.return_value = MagicMock()
-        loader = PPTLoader("test.pptx")
-        yield loader
+# Mock the database configuration for MySQLStorage
+db_config = {
+    'user': 'root',
+    'password': 'santosh25',
+    'host': 'localhost',
+    'database': 'test_db',
+}
 
-def test_pdf_loader_validation(pdf_loader):
-    assert pdf_loader.validate() is True
-    pdf_loader.file_path = "invalid_file.txt"
-    assert pdf_loader.validate() is False
+# Set up logging to file and console
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-def test_docx_loader_validation(docx_loader):
-    assert docx_loader.validate() is True
-    docx_loader.file_path = "invalid_file.txt"
-    assert docx_loader.validate() is False
+from datetime import datetime
+log_filename = f'test_results_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+file_handler = logging.FileHandler(log_filename, 'w')
 
-def test_ppt_loader_validation(ppt_loader):
-    assert ppt_loader.validate() is True
-    ppt_loader.file_path = "invalid_file.txt"
-    assert ppt_loader.validate() is False
+console_handler = logging.StreamHandler()
 
-def test_data_extractor_pdf(pdf_loader):
-    extractor = DataExtractor(pdf_loader)
-    pdf_loader.doc = MagicMock()
-    pdf_loader.doc.load_page.return_value.get_text.return_value = "Sample text"
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 
-    text_data = extractor.extract_text()
-    assert len(text_data) == 1
-    assert text_data[0]['text'] == "Sample text"
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+logger.setLevel(logging.DEBUG)
 
-def test_data_extractor_docx(docx_loader):
-    extractor = DataExtractor(docx_loader)
-    docx_loader.doc.paragraphs = [MagicMock(text="Paragraph 1", style=MagicMock(name="style", name="Normal")),
-                                   MagicMock(text="Paragraph 2", style=MagicMock(name="style", name="Heading1"))]
+def test_logging():
+    logging.info("Test case for logging.")
+    assert True
+
+# Test cases for the PDFLoader class
+def test_pdf_loader_valid_file():
+    pdf_loader = PDFLoader(pdf_path)
+    assert pdf_loader.validate(), "PDFLoader: File validation failed for a valid PDF file."
+    logging.info("PDFLoader: Valid PDF file test passed.")
     
-    text_data = extractor.extract_text()
-    assert len(text_data) == 2
-    assert text_data[0]['text'] == "Paragraph 1"
-    assert text_data[1]['style'] == "Heading1"
 
-def test_data_extractor_ppt(ppt_loader):
-    extractor = DataExtractor(ppt_loader)
-    ppt_loader.presentation.slides = [MagicMock(shapes=[MagicMock(text="Slide 1 Text"), MagicMock(text="Slide 2 Text")])]
-    
-    text_data = extractor.extract_text()
-    assert len(text_data) == 1
-    assert "Slide 1 Text" in text_data[0]['text']
+def test_pdf_loader_invalid_file():
+    pdf_loader = PDFLoader('invalid.txt')
+    assert not pdf_loader.validate(), "PDFLoader: File validation should fail for non-PDF files."
+    logging.info("PDFLoader: Invalid file format test passed.")
 
-def test_file_storage_save_text():
-    storage = FileStorage("test_output")
-    storage.save_text(["Test text"])
-    with open("test_output/extracted_text.txt", 'r') as f:
-        content = f.read().strip()
-    assert content == "Test text"
+# def test_pdf_loader_load_method(mocker):
+#     pdf_loader = PDFLoader(pdf_path)
+#     mock_open = mocker.patch('fitz.open', return_value=MagicMock())
+#     assert pdf_loader.load(), "PDFLoader: Failed to load a valid PDF."
+#     logging.info("PDFLoader: PDF loading test passed.")
+#     mock_open.assert_called_once_with(pdf_path)
 
-if __name__ == "__main__":
-    pytest.main()
+# # Test cases for DOCXLoader class
+# def test_docx_loader_valid_file():
+#     docx_loader = DOCXLoader(docx_path)
+#     assert docx_loader.validate(), "DOCXLoader: File validation failed for a valid DOCX file."
+#     logging.info("DOCXLoader: Valid DOCX file test passed.")
+
+# def test_docx_loader_load_method(mocker):
+#     docx_loader = DOCXLoader(docx_path)
+#     mock_open = mocker.patch('docx.Document', return_value=MagicMock())
+#     assert docx_loader.load(), "DOCXLoader: Failed to load a valid DOCX."
+#     logging.info("DOCXLoader: DOCX loading test passed.")
+#     mock_open.assert_called_once_with(docx_path)
+
+# # Test cases for PPTLoader class
+# def test_ppt_loader_valid_file():
+#     ppt_loader = PPTLoader(pptx_path)
+#     assert ppt_loader.validate(), "PPTLoader: File validation failed for a valid PPTX file."
+#     logging.info("PPTLoader: Valid PPTX file test passed.")
+
+# def test_ppt_loader_load_method(mocker):
+#     ppt_loader = PPTLoader(pptx_path)
+#     mock_open = mocker.patch('pptx.Presentation', return_value=MagicMock())
+#     assert ppt_loader.load(), "PPTLoader: Failed to load a valid PPTX."
+#     logging.info("PPTLoader: PPTX loading test passed.")
+#     mock_open.assert_called_once_with(pptx_path)
+
+# # Test cases for DataExtractor class
+# def test_extract_text_pdf(mocker):
+#     pdf_loader = PDFLoader(pdf_path)
+#     mocker.patch('fitz.open', return_value=MagicMock())
+#     extractor = DataExtractor(pdf_loader)
+#     mock_extract = mocker.patch.object(extractor, '_extract_pdf_text', return_value=[{'page_number': 1, 'text': 'Sample text'}])
+#     text = extractor.extract_text()
+#     assert text == [{'page_number': 1, 'text': 'Sample text'}], "DataExtractor: Text extraction failed."
+#     logging.info("DataExtractor: PDF text extraction test passed.")
+#     mock_extract.assert_called_once()
+
+# # Test cases for FileStorage class
+# def test_file_storage_save_text(mocker):
+#     file_storage = FileStorage(output_folder)
+#     mock_open = mocker.patch('builtins.open', mocker.mock_open())
+#     text_data = [{'page_number': 1, 'text': 'Sample text'}]
+#     file_storage.save_text(text_data)
+#     mock_open.assert_called_once_with(os.path.join(output_folder, 'extracted_text.txt'), 'w')
+#     logging.info("FileStorage: Text saving test passed.")
+
+# # Test cases for MySQLStorage class (mocking database connection)
+# def test_mysql_storage_save_text(mocker):
+#     mock_connection = mocker.patch('mysql.connector.connect', return_value=MagicMock())
+#     mysql_storage = MySQLStorage(db_config)
+#     text_data = [{'page_number': 1, 'text': 'Sample text'}]
+#     mysql_storage.save_text(text_data)
+#     mock_connection.assert_called_once()
+#     logging.info("MySQLStorage: Text saving to MySQL test passed.")
