@@ -82,38 +82,13 @@ def test_ppt_loader_valid_file():
     assert ppt_loader.validate(), "PPTLoader: File validation failed for a valid PPTX file."
     logging.info("PPTLoader: Valid PPTX file test passed.")
 
+
 def test_ppt_loader_load_method(mocker):
     ppt_loader = PPTLoader(pptx_path)
     mock_open = mocker.patch('pptx.Presentation', return_value=MagicMock())
-    assert ppt_loader.load(), "PPTLoader: Failed to load a valid PPTX."
+    
+    assert ppt_loader.load() is not None, "PPTLoader: Failed to load a valid PPTX."
     logging.info("PPTLoader: PPTX loading test passed.")
+    
+    # Check that the Presentation was called with the correct file path
     mock_open.assert_called_once_with(pptx_path)
-
-# # Test cases for DataExtractor class
-# def test_extract_text_pdf(mocker):
-#     pdf_loader = PDFLoader(pdf_path)
-#     mocker.patch('fitz.open', return_value=MagicMock())
-#     extractor = DataExtractor(pdf_loader)
-#     mock_extract = mocker.patch.object(extractor, '_extract_pdf_text', return_value=[{'page_number': 1, 'text': 'Sample text'}])
-#     text = extractor.extract_text()
-#     assert text == [{'page_number': 1, 'text': 'Sample text'}], "DataExtractor: Text extraction failed."
-#     logging.info("DataExtractor: PDF text extraction test passed.")
-#     mock_extract.assert_called_once()
-
-# # Test cases for FileStorage class
-# def test_file_storage_save_text(mocker):
-#     file_storage = FileStorage(output_folder)
-#     mock_open = mocker.patch('builtins.open', mocker.mock_open())
-#     text_data = [{'page_number': 1, 'text': 'Sample text'}]
-#     file_storage.save_text(text_data)
-#     mock_open.assert_called_once_with(os.path.join(output_folder, 'extracted_text.txt'), 'w')
-#     logging.info("FileStorage: Text saving test passed.")
-
-# # Test cases for MySQLStorage class (mocking database connection)
-# def test_mysql_storage_save_text(mocker):
-#     mock_connection = mocker.patch('mysql.connector.connect', return_value=MagicMock())
-#     mysql_storage = MySQLStorage(db_config)
-#     text_data = [{'page_number': 1, 'text': 'Sample text'}]
-#     mysql_storage.save_text(text_data)
-#     mock_connection.assert_called_once()
-#     logging.info("MySQLStorage: Text saving to MySQL test passed.")

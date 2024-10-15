@@ -1,0 +1,2 @@
+2024-10-15 14:24:32,755 - INFO - FileStorage: Text saving test passed.
+2024-10-15 14:24:32,758 - INFO - MySQLStorage: Text saving to MySQL test passed.

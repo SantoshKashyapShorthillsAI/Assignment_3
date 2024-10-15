@@ -231,7 +231,7 @@ class DataExtractor:
         elif isinstance(self.file_loader, DOCXLoader):
             return self._extract_docx_tables()
         elif isinstance(self.file_loader, PPTLoader):
-            return self._extract_ppt_tables()  # Tables are rare in PPT, but handle if any.
+            return self._extract_ppt_tables()  
         else:
             raise ValueError("Unsupported file type for table extraction.")
 
@@ -390,7 +390,7 @@ class MySQLStorage(Storage):
         for item in text_data:
             self.cursor.execute('''
                 INSERT INTO text_data (content, page_number) VALUES (%s, %s)
-            ''', (item.get("text", ""), item.get("slide_number", None)))  # Use "slide_number" instead of "page_number"
+            ''', (item.get("text", ""), item.get("slide_number", None))) 
         self.connection.commit()
 
 
@@ -471,13 +471,14 @@ if __name__ == "__main__":
             'pptx': (PPTLoader, '/home/shtlp_0103/Assignment_3/Output/PPTX')
         }
 
-        # Database configuration
+# Database configuration from environment variables
         db_config = {
-            'user': 'root',
-            'password': 'santosh25',
-            'host': 'localhost',
-            'database': 'sql_storage',
-        }
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST'),
+    'database': os.getenv('DB_DATABASE'),
+}
+
 
         # Check if the file extension is valid
         if file_extension in file_map:
