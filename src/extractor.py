@@ -168,6 +168,7 @@ class DataExtractor:
                         "slide_number": slide_num + 1,
                         "url": shape.hyperlink.address
                     })
+        print(link_data)
         
         return link_data
 
@@ -314,6 +315,7 @@ class FileStorage(Storage):
         """Save extracted text to a text file."""
         with open(os.path.join(self.output_directory, 'extracted_text.txt'), 'w') as f:
             for entry in text_data:
+                print(entry)
                 f.write(f"{entry}\n")
 
     def save_images(self, images_data):
@@ -445,12 +447,18 @@ class Processing:
         mysql_storage.save_links(link_data)
         mysql_storage.close()
 
+import os
 
 if __name__ == "__main__":
     
-    # Define the base directory where the files are located
-    base_dir = "/home/shtlp_0103/Assignment_3/Documents/"
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+    # Define the Documents directory relative to the project root
+    base_dir = os.path.join(project_root, "Documents")
+    
+    # Print the base directory for debugging
+    print(f"Base Directory: {base_dir}")
+    
     # Take filename input from the user
     file_name = input("Enter the filename (with extension): ").strip()
 
@@ -464,21 +472,23 @@ if __name__ == "__main__":
         # Extract the file extension
         file_extension = file_path.split('.')[-1].lower() if '.' in file_path else ''
 
+        # Define the output directory relative to the project root
+        output_dir = os.path.join(project_root, "Output")
+
         # Map file extensions to their corresponding loader classes and output folders
         file_map = {
-            'pdf': (PDFLoader, '/home/shtlp_0103/Assignment_3/Output/PDF'),
-            'docx': (DOCXLoader, '/home/shtlp_0103/Assignment_3/Output/DOCX'),
-            'pptx': (PPTLoader, '/home/shtlp_0103/Assignment_3/Output/PPTX')
+            'pdf': (PDFLoader, os.path.join(output_dir, "PDF")),
+            'docx': (DOCXLoader, os.path.join(output_dir, "DOCX")),
+            'pptx': (PPTLoader, os.path.join(output_dir, "PPTX")),
         }
-
-# Database configuration from environment variables
+        
+        # Database configuration from environment variables
         db_config = {
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'host': os.getenv('DB_HOST'),
-    'database': os.getenv('DB_DATABASE'),
-}
-
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'host': os.getenv('DB_HOST'),
+            'database': os.getenv('DB_DATABASE'),
+        }
 
         # Check if the file extension is valid
         if file_extension in file_map:
