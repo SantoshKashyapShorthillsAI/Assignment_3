@@ -1,2 +1,1 @@
-No text -> https://www.python.org
-No text -> http://www.google.com/
+Slide 1 -> https://www.python.org

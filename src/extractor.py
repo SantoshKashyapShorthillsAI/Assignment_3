@@ -140,14 +140,16 @@ class DataExtractor:
 
     def _extract_docx_links(self):
         link_data = []
-        for para in self.file_loader.doc.paragraphs:
+        for para_num, para in enumerate(self.file_loader.doc.paragraphs):
             for run in para.runs:
                 if run.font.color and run.text.startswith('http'):
                     link_data.append({
+                        "paragraph_number": para_num + 1,  # Add paragraph number
                         "url": run.text,
                         "style": para.style.name
                     })
         return link_data
+
 
     def _extract_ppt_links(self):
         link_data = []
@@ -168,8 +170,6 @@ class DataExtractor:
                         "slide_number": slide_num + 1,
                         "url": shape.hyperlink.address
                     })
-        print(link_data)
-        
         return link_data
 
 
@@ -315,8 +315,27 @@ class FileStorage(Storage):
         """Save extracted text to a text file."""
         with open(os.path.join(self.output_directory, 'extracted_text.txt'), 'w') as f:
             for entry in text_data:
-                print(entry)
                 f.write(f"{entry}\n")
+
+    def save_links(self, links_data):
+        """Save extracted hyperlinks with page/slide/paragraph number to a text file."""
+        with open(os.path.join(self.output_directory, 'extracted_links.txt'), 'w') as f:
+            for link in links_data:
+                # Determine whether it's a PDF page, PowerPoint slide, or Word paragraph
+                location = ""
+                if 'page_number' in link:
+                    location = f"Page {link['page_number']}"  # For PDF
+                elif 'slide_number' in link:
+                    location = f"Slide {link['slide_number']}"  # For PowerPoint
+                elif 'paragraph_number' in link:
+                    location = f"Paragraph {link['paragraph_number']}"  # For Word
+
+                # Use .get() to avoid KeyError if 'url' is missing
+                url = link.get('url', 'No URL')  # Default to 'No URL' if 'url' key is missing
+
+                # Write the location (page/slide/paragraph) and URL to the file
+                f.write(f"{location} -> {url}\n")
+
 
     def save_images(self, images_data):
         """Save extracted images to the output directory."""
@@ -326,26 +345,43 @@ class FileStorage(Storage):
             with open(image_path, 'wb') as img_file:
                 img_file.write(image['image_data'])
 
+
+
     def save_tables(self, tables_data):
-        """Save extracted tables as CSV files."""
+        """Save extracted tables as CSV files along with metadata."""
         for i, table in enumerate(tables_data):
-            # Safely get 'page_number', default to 'unknown_page' if missing
-            page_number = table.get("page_number", "unknown_page")
-            table_rows = table.get("table", [])
-            table_path = os.path.join(self.output_directory, f'table_{i}_page_{page_number}.csv')
+            # Safely get 'page_number', 'slide_number', or use 'unknown' if missing
+            page_number = table.get("page_number", table.get("slide_number", "unknown_location"))
             
+            # Safely get table data
+            table_rows = table.get("table", [])
+
+            # Define paths for the CSV file and metadata file
+            table_path = os.path.join(self.output_directory, f'table_{i}_location_{page_number}.csv')
+            metadata_path = os.path.join(self.output_directory, f'table_{i}_location_{page_number}_metadata.txt')
+
+            # Save the table data as a CSV file
             with open(table_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(table_rows)
 
-    def save_links(self, links_data):
-        """Save extracted hyperlinks to a text file."""
-        with open(os.path.join(self.output_directory, 'extracted_links.txt'), 'w') as f:
-            for link in links_data:
-                # Use .get() to avoid KeyError if key is missing
-                text = link.get('text', 'No text')  # Default to 'No text' if 'text' key is missing
-                url = link.get('url', 'No URL')  # Default to 'No URL' if 'url' key is missing
-                f.write(f"{text} -> {url}\n")
+            # Save metadata as a separate .txt file
+            with open(metadata_path, 'w') as metafile:
+                metafile.write(f"Table {i + 1} Metadata\n")
+                if 'page_number' in table:
+                    metafile.write(f"Extracted from PDF - Page {table['page_number']}\n")
+                elif 'slide_number' in table:
+                    metafile.write(f"Extracted from PowerPoint - Slide {table['slide_number']}\n")
+                else:
+                    metafile.write("Extracted from Word document\n")
+
+                # You can add more metadata if needed (e.g., source, timestamp, etc.)
+                metafile.write(f"Number of rows: {len(table_rows)}\n")
+                if table_rows:
+                    metafile.write(f"Number of columns: {len(table_rows[0])}\n")
+                else:
+                    metafile.write("Number of columns: 0\n")
+
 
 class MySQLStorage(Storage):
     def __init__(self, db_config):
