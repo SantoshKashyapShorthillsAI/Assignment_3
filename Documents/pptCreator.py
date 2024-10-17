@@ -1,26 +1,48 @@
+import random
 from pptx import Presentation
 from pptx.util import Inches
 
 # Create a presentation object
 presentation = Presentation()
 
-# List of hyperlinks to add to different slides
-hyperlinks = [
-    ("PowerPoint with Links, Text, Table, and Images", "This is a Python-generated PowerPoint with multiple elements.", "https://www.python.org", "Python's official website"),
-    ("Table Example", "Here is a simple table example:", None, None),  # No hyperlink for this slide
-    ("Image Example", "Check out this image:", None, None),  # No hyperlink for this slide
+# Example list of random hyperlinks, titles, and body texts
+titles = [
+    "Python Overview", "Data Science", "Machine Learning", "Artificial Intelligence",
+    "Web Development", "Software Engineering", "Cybersecurity", "Cloud Computing",
+    "Mobile App Development", "Game Development"
+]
+body_texts = [
+    "This slide covers an introduction to the topic.", 
+    "Here is some additional information about the subject.", 
+    "You can find more details in the official documentation.", 
+    "Check out the resources available online.", 
+    "Stay tuned for the upcoming updates."
+]
+links = [
+    "https://www.python.org", "https://www.djangoproject.com", "https://www.tensorflow.org", 
+    "https://pytorch.org", "https://www.aws.amazon.com", "https://azure.microsoft.com", 
+    "https://developer.android.com", "https://www.unrealengine.com"
+]
+link_texts = [
+    "Visit Python's official website", "Check out Django", "Learn about TensorFlow",
+    "Explore PyTorch", "Amazon Web Services", "Microsoft Azure", 
+    "Android Development", "Unreal Engine"
 ]
 
-# Add slides for hyperlinks
-for title_text, body_text, link, link_text in hyperlinks:
-    slide_layout = presentation.slide_layouts[5]  # 5 is a blank slide
+# Add random slides
+for i in range(50):
+    slide_layout = presentation.slide_layouts[5]  # Use blank layout for simplicity
     slide = presentation.slides.add_slide(slide_layout)
 
-    # Add Title Text
+    # Random title and body text
+    title_text = random.choice(titles)
+    body_text = random.choice(body_texts)
+    
+    # Add Title
     title = slide.shapes.title
-    title.text = title_text
+    title.text = f"Slide {i+1}: {title_text}"
 
-    # Add body text box
+    # Add Body Text
     left = Inches(1)
     top = Inches(2)
     width = Inches(6)
@@ -29,57 +51,39 @@ for title_text, body_text, link, link_text in hyperlinks:
     text_frame = textbox.text_frame
     text_frame.text = body_text
 
-    # Add hyperlink if provided
-    if link and link_text:
+    # Randomly add hyperlinks to some slides
+    if random.choice([True, False]):  # 50% chance to add a hyperlink
+        link = random.choice(links)
+        link_text = random.choice(link_texts)
         p = text_frame.add_paragraph()
         run = p.add_run()
         run.text = f"Click here to visit {link_text}"
         run.hyperlink.address = link
 
-    # Animation placeholder: Title and text will be animated when added later
-    # This can be done in PowerPoint manually by going to "Animations" -> Choose Animation.
+    # Randomly add a table to some slides
+    if random.choice([True, False]):  # 50% chance to add a table
+        rows = 2
+        cols = 2
+        left = Inches(1)
+        top = Inches(3)
+        width = Inches(5)
+        height = Inches(1)
+        table = slide.shapes.add_table(rows, cols, left, top, width, height).table
 
-# Add a slide for a table
-slide_layout = presentation.slide_layouts[5]
-slide2 = presentation.slides.add_slide(slide_layout)
+        # Set table content
+        table.cell(0, 0).text = 'Header 1'
+        table.cell(0, 1).text = 'Header 2'
+        table.cell(1, 0).text = 'Content 1'
+        table.cell(1, 1).text = 'Content 2'
 
-# Add a title for the table slide
-title = slide2.shapes.title
-title.text = "Table Example"
-
-# Create a table
-rows = 2
-cols = 2
-left = Inches(2)
-top = Inches(2)
-width = Inches(4)
-height = Inches(1)
-table = slide2.shapes.add_table(rows, cols, left, top, width, height).table
-
-# Set column headers
-table.cell(0, 0).text = 'Name'
-table.cell(0, 1).text = 'Age'
-
-# Set row content
-table.cell(1, 0).text = 'John'
-table.cell(1, 1).text = '30'
-
-# Add a slide for an image
-slide3 = presentation.slides.add_slide(slide_layout)
-
-# Add a title for the image slide
-title = slide3.shapes.title
-title.text = "Image Example"
-
-# Add an image (Make sure you have an image in the same directory as the script)
-img_path = "/home/shtlp_0103/Assignment_3/Documents/apple.jpeg"  # Update with your image path
-left = Inches(1)
-top = Inches(2)
-height = Inches(3)
-slide3.shapes.add_picture(img_path, left, top, height=height)
-
-# Animation placeholder: Image will be animated later in PowerPoint manually
+    # Randomly add images to some slides
+    if random.choice([True, False]):  # 50% chance to add an image
+        img_path = "/home/shtlp_0103/Assignment_3/Documents/apple.jpeg"  # Replace with valid path
+        left = Inches(1)
+        top = Inches(2)
+        height = Inches(3)
+        slide.shapes.add_picture(img_path, left, top, height=height)
 
 # Save the presentation
-presentation.save('animations.pptx')
-print("Presentation created successfully! Please add animations manually in PowerPoint.")
+presentation.save('large.pptx')
+print("Presentation with 50+ slides created successfully!")

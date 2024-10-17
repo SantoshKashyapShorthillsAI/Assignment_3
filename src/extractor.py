@@ -6,6 +6,7 @@ import os
 import csv
 import pdfplumber
 import mysql.connector
+import shutil  # To delete directories
 
 class FileLoader(ABC):
     def __init__(self, file_path, expected_extension):
@@ -327,13 +328,31 @@ class FileStorage(Storage):
                 f.write(f"{location} -> {url}\n")
 
 
+
     def save_images(self, images_data):
-        """Save extracted images to the output directory."""
+        """Save extracted images and metadata to the output directory."""
         for i, image in enumerate(images_data):
             image_extension = image.get("image_extension", "png")  # Default to PNG if not provided
             image_path = os.path.join(self.output_directory, f'image_{i}.{image_extension}')
+            metadata_path = os.path.join(self.output_directory, f'image_{i}_metadata.txt')
+
+            # Save the image file
             with open(image_path, 'wb') as img_file:
                 img_file.write(image['image_data'])
+
+            # Create and save the image metadata
+            with open(metadata_path, 'w') as metafile:
+                metafile.write(f"Image {i + 1} Metadata\n")
+                if 'page_number' in image:
+                    metafile.write(f"Extracted from PDF - Page {image['page_number']}\n")
+                elif 'slide_number' in image:
+                    metafile.write(f"Extracted from PowerPoint - Slide {image['slide_number']}\n")
+                else:
+                    metafile.write("Extracted from Word document\n")
+                
+                metafile.write(f"Image Extension: {image_extension}\n")
+                metafile.write(f"Image Size: {len(image['image_data'])} bytes\n")
+
 
 
 
@@ -449,7 +468,16 @@ class MySQLStorage(Storage):
         self.connection.close()                
 
 class Processing:
+    @staticmethod
     def process_file(loader_class, file_path, output_folder, db_config):
+        # Delete the existing output folder for the file type
+        if os.path.exists(output_folder):
+            shutil.rmtree(output_folder)  # Remove the entire directory and its contents
+        
+        # Recreate the output folder
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Initialize the loader and extractor
         loader = loader_class(file_path)
         extractor = DataExtractor(loader)
 
@@ -473,7 +501,6 @@ class Processing:
         mysql_storage.save_tables(tables_data)
         mysql_storage.save_links(link_data)
         mysql_storage.close()
-        
 
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -481,9 +508,6 @@ if __name__ == "__main__":
     # Directories
     base_dir = os.path.join(project_root, "Documents")
     output_dir = os.path.join(project_root, "Output")
-    
-    # Print base directory for debugging
-    print(f"Base Directory: {base_dir}")
 
     # Get filename from user
     file_name = input("Enter the filename (with extension): ").strip()

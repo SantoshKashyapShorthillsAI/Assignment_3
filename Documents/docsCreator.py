@@ -10,7 +10,7 @@ doc = Document()
 doc.add_heading('Document with Links, Text, Complex Tables, and Footnotes', 0)
 
 # Add some introductory text
-doc.add_paragraph("This is a Python-generated Word document with multiple elements including complex tables and footnotes.")
+doc.add_paragraph("This is a Python-generated Word document with multiple elements including complex tables, large images, and footnotes.")
 
 # Function to add a hyperlink
 def add_hyperlink(paragraph, url, text):
@@ -66,8 +66,8 @@ table.cell(3, 2).text = 'Row 2 Col 3'
 # Add an image (Ensure the image path is correct)
 doc.add_heading('Image Example', level=1)
 image_path = '/home/shtlp_0103/Assignment_3/Documents/apple.jpeg'  # Update with your image path
-doc.add_picture(image_path, width=Inches(4))
+doc.add_picture(image_path, width=Inches(6))  # Increased image width to 6 inches for larger size
 
 # Save the document
-doc.save('/home/shtlp_0103/Assignment_3/Documents/footnotes.docx')
-print("Document with footnotes created successfully!")
+doc.save('/home/shtlp_0103/Assignment_3/Documents/large_images.docx')
+print("Document with footnotes and large images created successfully!")
