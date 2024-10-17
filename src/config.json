@@ -1,0 +1,8 @@
+{
+    "output_directory": "Output",
+    "file_extensions": {
+        "pdf": {"loader_class": "PDFLoader", "output_subdir": "PDF"},
+        "docx": {"loader_class": "DOCXLoader", "output_subdir": "DOCX"},
+        "pptx": {"loader_class": "PPTLoader", "output_subdir": "PPTX"}
+    }
+}

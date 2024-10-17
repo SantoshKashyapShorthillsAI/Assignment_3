@@ -7,6 +7,8 @@ import csv
 import pdfplumber
 import mysql.connector
 import shutil  # To delete directories
+from dotenv import load_dotenv
+import json
 
 class FileLoader(ABC):
     def __init__(self, file_path, expected_extension):
@@ -467,14 +469,32 @@ class MySQLStorage(Storage):
         self.cursor.close()
         self.connection.close()                
 
+class FileLoaderRegistry:
+    """Registry to map file extensions to loader classes and their output directories."""
+    
+    def __init__(self, output_dir):
+        self.output_dir = output_dir
+        self.loader_map = {
+            'pdf': (PDFLoader, os.path.join(self.output_dir, "PDF")),
+            'docx': (DOCXLoader, os.path.join(self.output_dir, "DOCX")),
+            'pptx': (PPTLoader, os.path.join(self.output_dir, "PPTX")),
+        }
+
+    def register_loader(self, file_extension, loader_class, output_subdir):
+        """Register a new file extension with its loader class and output directory."""
+        self.loader_map[file_extension] = (loader_class, os.path.join(self.output_dir, output_subdir))
+
+    def get_loader_and_output_dir(self, file_extension):
+        """Get the loader class and output directory for the given file extension."""
+        return self.loader_map.get(file_extension)
+
+
 class Processing:
     @staticmethod
     def process_file(loader_class, file_path, output_folder, db_config):
-        # Delete the existing output folder for the file type
+        # Delete the existing output folder for the file type and recreate it
         if os.path.exists(output_folder):
-            shutil.rmtree(output_folder)  # Remove the entire directory and its contents
-        
-        # Recreate the output folder
+            shutil.rmtree(output_folder)
         os.makedirs(output_folder, exist_ok=True)
 
         # Initialize the loader and extractor
@@ -487,14 +507,14 @@ class Processing:
         images_data = extractor.extract_images()
         tables_data = extractor.extract_tables()
 
-        # Save to file storage
+        # Save data to file storage
         file_storage = FileStorage(output_folder)
         file_storage.save_text(text_data)
         file_storage.save_links(link_data)
         file_storage.save_images(images_data)
         file_storage.save_tables(tables_data)
 
-        # Save to MySQL storage
+        # Save data to MySQL storage
         mysql_storage = MySQLStorage(db_config)
         mysql_storage.save_text(text_data)
         mysql_storage.save_images(images_data)
@@ -502,40 +522,43 @@ class Processing:
         mysql_storage.save_links(link_data)
         mysql_storage.close()
 
-if __name__ == "__main__":
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Directories
+if __name__ == "__main__":
+    # Define project root and directories
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     base_dir = os.path.join(project_root, "Documents")
     output_dir = os.path.join(project_root, "Output")
 
-    # Get filename from user
+    # Initialize the registry and register loaders for supported file types
+    registry = FileLoaderRegistry(output_dir)
+
+#    registry.register_loader('xlsx', XLSXLoader, "XLSX")
+
+    # Get the filename from the user
     file_name = input("Enter the filename (with extension): ").strip()
     file_path = os.path.join(base_dir, file_name)
 
-    # Check if file exists
+    # Check if the file exists
     if not os.path.isfile(file_path):
         print(f"The file at the path '{file_path}' does not exist. Please provide a valid relative path.")
     else:
-        # Map file extensions to loader classes and output folders
-        file_map = {
-            'pdf': (PDFLoader, os.path.join(output_dir, "PDF")),
-            'docx': (DOCXLoader, os.path.join(output_dir, "DOCX")),
-            'pptx': (PPTLoader, os.path.join(output_dir, "PPTX")),
-        }
+        # Extract file extension and get loader class/output directory from the registry
+        file_extension = file_name.split('.')[-1].lower()
+        loader_class_output = registry.get_loader_and_output_dir(file_extension)
 
-        # Extract file extension and process if valid
-        file_extension = file_path.split('.')[-1].lower()
-        loader_class_output = file_map.get(file_extension)
-        
         if loader_class_output:
             loader_class, output_folder = loader_class_output
+
+            # Get database configuration from environment variables
+            load_dotenv()
             db_config = {
                 'user': os.getenv('DB_USER'),
                 'password': os.getenv('DB_PASSWORD'),
                 'host': os.getenv('DB_HOST'),
                 'database': os.getenv('DB_DATABASE'),
             }
+
+            # Process the file
             Processing.process_file(loader_class, file_path, output_folder, db_config)
         else:
-            print("Unsupported file type. Please enter a valid filename with a supported extension (pdf, docx, pptx).")
+            print("Unsupported file type. Please enter a valid filename with a supported extension (pdf, docx, pptx, etc.).")
