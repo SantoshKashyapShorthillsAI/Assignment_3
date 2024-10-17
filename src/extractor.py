@@ -7,12 +7,14 @@ import csv
 import pdfplumber
 import mysql.connector
 
-
 class FileLoader(ABC):
-    @abstractmethod
-    def validate(self):
-        """Check if the file is valid."""
-        pass
+    def __init__(self, file_path, expected_extension):
+        self.file_path = file_path
+        self.expected_extension = expected_extension
+
+    def validate_extension(self):
+        if not self.file_path.endswith(self.expected_extension):
+            raise ValueError(f"Invalid file format. Expected {self.expected_extension}.")
 
     @abstractmethod
     def load(self):
@@ -22,45 +24,33 @@ class FileLoader(ABC):
 
 class PDFLoader(FileLoader):
     def __init__(self, file_path):
-        self.file_path = file_path
+        super().__init__(file_path, '.pdf')
         self.doc = None
 
-    def validate(self):
-        return self.file_path.endswith('.pdf')
-
     def load(self):
-        if not self.validate():
-            raise ValueError("Invalid file format for PDF.")
+        self.validate_extension()
         self.doc = fitz.open(self.file_path)
         return self.doc
 
 
 class DOCXLoader(FileLoader):
     def __init__(self, file_path):
-        self.file_path = file_path
+        super().__init__(file_path, '.docx')
         self.doc = None
 
-    def validate(self):
-        return self.file_path.endswith('.docx')
-
     def load(self):
-        if not self.validate():
-            raise ValueError("Invalid file format for DOCX.")
+        self.validate_extension()
         self.doc = docx.Document(self.file_path)
         return self.doc
 
 
 class PPTLoader(FileLoader):
     def __init__(self, file_path):
-        self.file_path = file_path
+        super().__init__(file_path, '.pptx')
         self.presentation = None
 
-    def validate(self):
-        return self.file_path.endswith('.pptx')
-
     def load(self):
-        if not self.validate():
-            raise ValueError("Invalid file format for PPTX.")
+        self.validate_extension()
         self.presentation = Presentation(self.file_path)
         return self.presentation
 
@@ -444,7 +434,7 @@ class MySQLStorage(Storage):
                 INSERT INTO tables_data (table_data, page_number) VALUES (%s, %s)
             ''', (str(item["table"]), item.get("page_number", None)))
         self.connection.commit()
-        
+
     def save_links(self, links_data):
         for item in links_data:
             url = item.get("url")
@@ -483,53 +473,45 @@ class Processing:
         mysql_storage.save_tables(tables_data)
         mysql_storage.save_links(link_data)
         mysql_storage.close()
-
-import os
+        
 
 if __name__ == "__main__":
-    
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Define the Documents directory relative to the project root
+    # Directories
     base_dir = os.path.join(project_root, "Documents")
+    output_dir = os.path.join(project_root, "Output")
     
-    # Print the base directory for debugging
+    # Print base directory for debugging
     print(f"Base Directory: {base_dir}")
-    
-    # Take filename input from the user
-    file_name = input("Enter the filename (with extension): ").strip()
 
-    # Construct the full path by joining the base directory with the filename
+    # Get filename from user
+    file_name = input("Enter the filename (with extension): ").strip()
     file_path = os.path.join(base_dir, file_name)
-    
-    # Check if the relative path is valid
+
+    # Check if file exists
     if not os.path.isfile(file_path):
         print(f"The file at the path '{file_path}' does not exist. Please provide a valid relative path.")
     else:
-        # Extract the file extension
-        file_extension = file_path.split('.')[-1].lower() if '.' in file_path else ''
-
-        # Define the output directory relative to the project root
-        output_dir = os.path.join(project_root, "Output")
-
-        # Map file extensions to their corresponding loader classes and output folders
+        # Map file extensions to loader classes and output folders
         file_map = {
             'pdf': (PDFLoader, os.path.join(output_dir, "PDF")),
             'docx': (DOCXLoader, os.path.join(output_dir, "DOCX")),
             'pptx': (PPTLoader, os.path.join(output_dir, "PPTX")),
         }
-        
-        # Database configuration from environment variables
-        db_config = {
-            'user': os.getenv('DB_USER'),
-            'password': os.getenv('DB_PASSWORD'),
-            'host': os.getenv('DB_HOST'),
-            'database': os.getenv('DB_DATABASE'),
-        }
 
-        # Check if the file extension is valid
-        if file_extension in file_map:
-            loader_class, output_folder = file_map[file_extension]
+        # Extract file extension and process if valid
+        file_extension = file_path.split('.')[-1].lower()
+        loader_class_output = file_map.get(file_extension)
+        
+        if loader_class_output:
+            loader_class, output_folder = loader_class_output
+            db_config = {
+                'user': os.getenv('DB_USER'),
+                'password': os.getenv('DB_PASSWORD'),
+                'host': os.getenv('DB_HOST'),
+                'database': os.getenv('DB_DATABASE'),
+            }
             Processing.process_file(loader_class, file_path, output_folder, db_config)
         else:
             print("Unsupported file type. Please enter a valid filename with a supported extension (pdf, docx, pptx).")

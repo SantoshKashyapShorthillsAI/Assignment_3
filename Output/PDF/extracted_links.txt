@@ -1,3 +1,2 @@
-Page 5 -> None
-Page 5 -> None
-Page 36 -> None
+Page 1 -> https://www.w3schools.com/python/python_iterators.asp#:~:text=An%20iterator%20is%20an%20object,)%20and%20__next__()%20
+Page 1 -> https://www.w3schools.com/python/python_iterators.asp#:~:text=An%20iterator%20is%20an%20object,)%20and%20__next__()%20

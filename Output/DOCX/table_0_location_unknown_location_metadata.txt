@@ -1,4 +1,0 @@
-Table 1 Metadata
-Extracted from Word document
-Number of rows: 4
-Number of columns: 3

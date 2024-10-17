@@ -16,11 +16,11 @@ output_folder = '/home/shtlp_0103/Assignment_3/Output'
 
 # Mock the database configuration for MySQLStorage
 db_config = {
-    'user': 'root',
-    'password': 'santosh25',
-    'host': 'localhost',
-    'database': 'test_db',
-}
+                'user': os.getenv('DB_USER'),
+                'password': os.getenv('DB_PASSWORD'),
+                'host': os.getenv('DB_HOST'),
+                'database': 'test_db',
+            }
 
 # Set up logging to file and console
 logger = logging.getLogger()

@@ -1,7 +1,0 @@
-{'text': 'Document with Links, Text, Complex Tables, and Footnotes', 'style': 'Title'}
-{'text': 'This is a Python-generated Word document with multiple elements including complex tables and footnotes.', 'style': 'Normal'}
-{'text': "For more information, visit: Python's official website [1]", 'style': 'Normal'}
-{'text': '1. Python is a programming language that lets you work quickly and integrate systems more effectively.', 'style': 'Normal'}
-{'text': 'Complex Table Example', 'style': 'Heading 1'}
-{'text': 'Image Example', 'style': 'Heading 1'}
-{'text': '', 'style': 'Normal'}
