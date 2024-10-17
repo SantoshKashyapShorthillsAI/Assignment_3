@@ -382,7 +382,6 @@ class FileStorage(Storage):
                 else:
                     metafile.write("Number of columns: 0\n")
 
-
 class MySQLStorage(Storage):
     def __init__(self, db_config):
         self.connection = mysql.connector.connect(**db_config)
@@ -445,12 +444,14 @@ class MySQLStorage(Storage):
                 INSERT INTO tables_data (table_data, page_number) VALUES (%s, %s)
             ''', (str(item["table"]), item.get("page_number", None)))
         self.connection.commit()
-
+        
     def save_links(self, links_data):
         for item in links_data:
-            self.cursor.execute('''
-                INSERT INTO links_data (url, page_number) VALUES (%s, %s)
-            ''', (item["url"], item.get("page_number", None)))
+            url = item.get("url")
+            if url:  # Ensure url is not None or empty
+                self.cursor.execute('''
+                    INSERT INTO links_data (url, page_number) VALUES (%s, %s)
+                ''', (url, item.get("page_number", None)))
         self.connection.commit()
 
     def close(self):

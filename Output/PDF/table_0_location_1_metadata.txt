@@ -1,4 +1,4 @@
 Table 1 Metadata
 Extracted from PDF - Page 1
-Number of rows: 4
-Number of columns: 4
+Number of rows: 2
+Number of columns: 1

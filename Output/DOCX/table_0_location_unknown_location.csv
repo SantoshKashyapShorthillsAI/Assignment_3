@@ -1,5 +1,4 @@
-A,"B
-"
-10,78
-11,90
-12,23
+Merged Header (spanning 3 columns),Merged Header (spanning 3 columns),Merged Header (spanning 3 columns)
+Column 1,Column 2,Column 3
+Row 1 Col 1,Row 1 Col 2,Row 1 Col 3
+Row 2 Col 1,Row 2 Col 2,Row 2 Col 3

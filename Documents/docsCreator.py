@@ -7,10 +7,10 @@ from docx.oxml.ns import qn
 doc = Document()
 
 # Add a title
-doc.add_heading('Document with Links, Text, and Complex Tables', 0)
+doc.add_heading('Document with Links, Text, Complex Tables, and Footnotes', 0)
 
 # Add some introductory text
-doc.add_paragraph("This is a Python-generated Word document with multiple elements including complex tables.")
+doc.add_paragraph("This is a Python-generated Word document with multiple elements including complex tables and footnotes.")
 
 # Function to add a hyperlink
 def add_hyperlink(paragraph, url, text):
@@ -31,6 +31,11 @@ def add_hyperlink(paragraph, url, text):
 # Adding a paragraph with a hyperlink
 p = doc.add_paragraph("For more information, visit: ")
 add_hyperlink(p, "https://www.python.org", "Python's official website")
+
+# Add a footnote
+p.add_run(" [1]")  # Reference in the text
+footnote = doc.add_paragraph()
+footnote.add_run("1. Python is a programming language that lets you work quickly and integrate systems more effectively.")
 
 # Add a section heading for complex table
 doc.add_heading('Complex Table Example', level=1)
@@ -64,5 +69,5 @@ image_path = '/home/shtlp_0103/Assignment_3/Documents/apple.jpeg'  # Update with
 doc.add_picture(image_path, width=Inches(4))
 
 # Save the document
-doc.save('/home/shtlp_0103/Assignment_3/Documents/complex.docx')
-print("Document created successfully!")
+doc.save('/home/shtlp_0103/Assignment_3/Documents/footnotes.docx')
+print("Document with footnotes created successfully!")

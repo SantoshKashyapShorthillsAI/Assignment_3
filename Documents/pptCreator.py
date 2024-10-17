@@ -36,6 +36,9 @@ for title_text, body_text, link, link_text in hyperlinks:
         run.text = f"Click here to visit {link_text}"
         run.hyperlink.address = link
 
+    # Animation placeholder: Title and text will be animated when added later
+    # This can be done in PowerPoint manually by going to "Animations" -> Choose Animation.
+
 # Add a slide for a table
 slide_layout = presentation.slide_layouts[5]
 slide2 = presentation.slides.add_slide(slide_layout)
@@ -75,6 +78,8 @@ top = Inches(2)
 height = Inches(3)
 slide3.shapes.add_picture(img_path, left, top, height=height)
 
+# Animation placeholder: Image will be animated later in PowerPoint manually
+
 # Save the presentation
-presentation.save('hyperlinks.pptx')
-print("Presentation with hyperlinks on different slides created successfully!")
+presentation.save('animations.pptx')
+print("Presentation created successfully! Please add animations manually in PowerPoint.")
