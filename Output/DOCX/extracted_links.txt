@@ -1,1 +1,0 @@
-Paragraph 6 -> https://www.w3schools.com/python/python_iterators.asp#:~:text=An%20iterator%20is%20an%20object,)%20and%20__next__()%20

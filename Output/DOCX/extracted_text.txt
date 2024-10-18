@@ -1,9 +1,4 @@
-{'text': '', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
-{'text': 'Hello World', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
-{'text': 'https://www.w3schools.com/python/python_iterators.asp#:~:text=An%20iterator%20is%20an%20object,)%20and%20__next__()%20.', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
-{'text': '', 'style': 'Normal'}
+{'text': 'Document with Main Text and Comments', 'style': 'Title'}
+{'text': 'This is the main content of the document. Some parts of the content might require comments. ', 'style': 'Normal'}
+{'text': "Here's a section that might need a comment. [Comment: This is an example of a comment added in the document.]", 'style': 'Normal'}
+{'text': 'Another piece of text with a comment at the end.[Comment: This comment provides additional clarification.]', 'style': 'Normal'}
