@@ -45,20 +45,110 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 logger.setLevel(logging.DEBUG)
 
-# Test cases for FileStorage class
-def test_file_storage_save_text(mocker):
-    file_storage = FileStorage(output_folder)
-    mock_open = mocker.patch('builtins.open', mocker.mock_open())
+@pytest.fixture
+def file_storage(tmp_path):
+    # Create a FileStorage instance with a temporary directory
+    return FileStorage(str(tmp_path))
+
+def test_file_storage_save_text(file_storage, mocker):
     text_data = [{'page_number': 1, 'text': 'Sample text'}]
+    
+    # Mock open function to test save_text
+    mock_open_function = mocker.patch('builtins.open', mock_open())
+    
     file_storage.save_text(text_data)
-    mock_open.assert_called_once_with(os.path.join(output_folder, 'extracted_text.txt'), 'w')
+    
+    mock_open_function.assert_called_once_with(os.path.join(file_storage.output_directory, 'extracted_text.txt'), 'w')
+    mock_open_function().write.assert_called_once_with('Sample text\n')
     logging.info("FileStorage: Text saving test passed.")
 
-# Test cases for MySQLStorage class (mocking database connection)
-def test_mysql_storage_save_text(mocker):
+def test_file_storage_save_links(file_storage, mocker):
+    links_data = [{'url': 'http://example.com', 'page_number': 1}]
+    
+    # Mock open function to test save_links
+    mock_open_function = mocker.patch('builtins.open', mock_open())
+    
+    file_storage.save_links(links_data)
+    
+    mock_open_function.assert_called_once_with(os.path.join(file_storage.output_directory, 'extracted_links.txt'), 'w')
+    mock_open_function().write.assert_called_once_with('Page 1 -> http://example.com\n')
+    logging.info("FileStorage: Links saving test passed.")
+
+def test_file_storage_save_images(file_storage, mocker):
+    images_data = [{'image_data': b'\x89PNG...', 'image_extension': 'png', 'page_number': 1}]
+    
+    # Mock open function to test save_images
+    mock_open_function = mocker.patch('builtins.open', mock_open())
+    
+    file_storage.save_images(images_data)
+    
+    assert mock_open_function.call_count == 2  # Check that two files are being opened (image and metadata)
+    logging.info("FileStorage: Images saving test passed.")
+
+def test_file_storage_save_tables(file_storage, mocker):
+    tables_data = [{'table': [['Header1', 'Header2'], ['Row1Col1', 'Row1Col2']], 'page_number': 1}]
+    
+    # Mock open function to test save_tables
+    mock_open_function = mocker.patch('builtins.open', mock_open())
+    
+    file_storage.save_tables(tables_data)
+    
+    assert mock_open_function.call_count == 2  # Check that two files are being opened (table and metadata)
+    logging.info("FileStorage: Tables saving test passed.")
+
+
+@pytest.fixture
+def mysql_storage(mocker):
+    # Mock MySQL connection
     mock_connection = mocker.patch('mysql.connector.connect', return_value=MagicMock())
-    mysql_storage = MySQLStorage(db_config)
+    storage = MySQLStorage(db_config)
+    yield storage
+    storage.close()
+
+def test_mysql_storage_save_text(mysql_storage, mocker):
     text_data = [{'page_number': 1, 'text': 'Sample text'}]
+    mock_cursor = mysql_storage.cursor
+    mock_cursor.execute = MagicMock()
+    
     mysql_storage.save_text(text_data)
-    mock_connection.assert_called_once()
+    
+    mock_cursor.execute.assert_called_once_with('''
+        INSERT INTO text_data (content, page_number) VALUES (%s, %s)
+    ''', ('Sample text', None))
     logging.info("MySQLStorage: Text saving to MySQL test passed.")
+
+def test_mysql_storage_save_images(mysql_storage, mocker):
+    images_data = [{'image_data': b'\x89PNG...', 'image_extension': 'png', 'page_number': 1}]
+    mock_cursor = mysql_storage.cursor
+    mock_cursor.execute = MagicMock()
+    
+    mysql_storage.save_images(images_data)
+    
+    mock_cursor.execute.assert_called_once_with('''
+        INSERT INTO images_data (image_data, image_extension, page_number) VALUES (%s, %s, %s)
+    ''', (b'\x89PNG...', 'png', 1))
+    logging.info("MySQLStorage: Images saving to MySQL test passed.")
+
+def test_mysql_storage_save_tables(mysql_storage, mocker):
+    tables_data = [{'table': [['Header1', 'Header2'], ['Row1Col1', 'Row1Col2']], 'page_number': 1}]
+    mock_cursor = mysql_storage.cursor
+    mock_cursor.execute = MagicMock()
+    
+    mysql_storage.save_tables(tables_data)
+    
+    mock_cursor.execute.assert_called_once_with('''
+        INSERT INTO tables_data (table_data, page_number) VALUES (%s, %s)
+    ''', ("[['Header1', 'Header2'], ['Row1Col1', 'Row1Col2']]", None))
+    logging.info("MySQLStorage: Tables saving to MySQL test passed.")
+
+def test_mysql_storage_save_links(mysql_storage, mocker):
+    links_data = [{'url': 'http://example.com', 'page_number': 1}]
+    mock_cursor = mysql_storage.cursor
+    mock_cursor.execute = MagicMock()
+    
+    mysql_storage.save_links(links_data)
+    
+    mock_cursor.execute.assert_called_once_with('''
+        INSERT INTO links_data (url, page_number) VALUES (%s, %s)
+    ''', ('http://example.com', None))
+    logging.info("MySQLStorage: Links saving to MySQL test passed.")
