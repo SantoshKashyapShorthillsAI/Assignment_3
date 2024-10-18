@@ -1,6 +1,7 @@
 # data_extractors.py
+
 from abc import ABC, abstractmethod
-from file_loaders import PDFLoader,DOCXLoader,PPTLoader , FileLoader
+from file_loaders import PDFLoader, DOCXLoader, PPTLoader, FileLoader
 import os
 from file_loaders import FileLoaderRegistry
 import fitz
@@ -10,10 +11,27 @@ import csv
 import pdfplumber
 
 
-import pdfplumber
-
 class DataExtractor:
+    """
+    Class for extracting data from different file types (PDF, DOCX, PPTX).
+
+    Attributes:
+        file_loader (FileLoader): An instance of a file loader for loading specific file types.
+
+    Methods:
+        extract_text(): Extracts text with metadata (page number, style).
+        extract_links(): Extracts hyperlinks with metadata.
+        extract_images(): Extracts images from the document.
+        extract_tables(): Extracts tables from the document.
+    """
+
     def __init__(self, file_loader: FileLoader):
+        """
+        Initializes the DataExtractor.
+
+        Args:
+            file_loader (FileLoader): An instance of the FileLoader (PDFLoader, DOCXLoader, or PPTLoader).
+        """
         self.file_loader = file_loader
         self.file_loader.load()
 
@@ -29,6 +47,7 @@ class DataExtractor:
             raise ValueError("Unsupported file type for text extraction.")
 
     def _extract_pdf_text(self):
+        """Extracts text from a PDF file."""
         text_data = []
         for page_num in range(len(self.file_loader.doc)):
             page = self.file_loader.doc.load_page(page_num)
@@ -40,6 +59,7 @@ class DataExtractor:
         return text_data
 
     def _extract_docx_text(self):
+        """Extracts text from a DOCX file."""
         text_data = []
         for para in self.file_loader.doc.paragraphs:
             text_data.append({
@@ -49,6 +69,7 @@ class DataExtractor:
         return text_data
 
     def _extract_ppt_text(self):
+        """Extracts text from a PPTX file."""
         text_data = []
         for slide_num, slide in enumerate(self.file_loader.presentation.slides):
             slide_text = []
@@ -75,6 +96,7 @@ class DataExtractor:
             raise ValueError("Unsupported file type for link extraction.")
 
     def _extract_pdf_links(self):
+        """Extracts hyperlinks from a PDF file."""
         link_data = []
         for page_num in range(len(self.file_loader.doc)):
             page = self.file_loader.doc.load_page(page_num)
@@ -87,6 +109,7 @@ class DataExtractor:
         return link_data
 
     def _extract_docx_links(self):
+        """Extracts hyperlinks from a DOCX file."""
         link_data = []
         for para_num, para in enumerate(self.file_loader.doc.paragraphs):
             for run in para.runs:
@@ -98,8 +121,8 @@ class DataExtractor:
                     })
         return link_data
 
-
     def _extract_ppt_links(self):
+        """Extracts hyperlinks from a PPTX file."""
         link_data = []
         for slide_num, slide in enumerate(self.file_loader.presentation.slides):
             for shape in slide.shapes:
@@ -120,7 +143,6 @@ class DataExtractor:
                     })
         return link_data
 
-
     def extract_images(self):
         """Extract images from the document."""
         if isinstance(self.file_loader, PDFLoader):
@@ -133,6 +155,7 @@ class DataExtractor:
             raise ValueError("Unsupported file type for image extraction.")
 
     def _extract_pdf_images(self):
+        """Extracts images from a PDF file."""
         image_data = []
         for page_num in range(len(self.file_loader.doc)):
             page = self.file_loader.doc.load_page(page_num)
@@ -150,6 +173,7 @@ class DataExtractor:
         return image_data
 
     def _extract_docx_images(self):
+        """Extracts images from a DOCX file."""
         image_data = []
         for rel in self.file_loader.doc.part.rels.values():
             if "image" in rel.target_ref:
@@ -160,6 +184,7 @@ class DataExtractor:
         return image_data
 
     def _extract_ppt_images(self):
+        """Extracts images from a PPTX file."""
         image_data = []
         for slide_num, slide in enumerate(self.file_loader.presentation.slides):
             for shape in slide.shapes:
@@ -176,7 +201,7 @@ class DataExtractor:
     def extract_tables(self):
         """Extract tables from the document."""
         if isinstance(self.file_loader, PDFLoader):
-            return self._extract_pdf_tables_with_plumber()  # Using 
+            return self._extract_pdf_tables_with_plumber()  # Using pdfplumber for PDFs
         elif isinstance(self.file_loader, DOCXLoader):
             return self._extract_docx_tables()
         elif isinstance(self.file_loader, PPTLoader):
@@ -185,7 +210,7 @@ class DataExtractor:
             raise ValueError("Unsupported file type for table extraction.")
 
     def _extract_pdf_tables_with_plumber(self):
-        """Extract tables from PDF using pdfplumber."""
+        """Extracts tables from a PDF using pdfplumber."""
         table_data = []
         with pdfplumber.open(self.file_loader.file_path) as pdf:
             for page_num, page in enumerate(pdf.pages):
@@ -198,6 +223,7 @@ class DataExtractor:
         return table_data
     
     def _extract_docx_tables(self):
+        """Extracts tables from a DOCX file."""
         table_data = []
         for table in self.file_loader.doc.tables:
             table_rows = []
@@ -212,6 +238,7 @@ class DataExtractor:
         return table_data
 
     def _extract_ppt_tables(self):
+        """Extracts tables from a PPTX file."""
         table_data = []
         for slide_num, slide in enumerate(self.file_loader.presentation.slides):
             for shape in slide.shapes:
@@ -225,4 +252,3 @@ class DataExtractor:
                         "table": table_rows
                     })
         return table_data
-
