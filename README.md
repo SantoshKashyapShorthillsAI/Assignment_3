@@ -37,7 +37,7 @@ Assignment 3 : Python
 
 ---
 
-## Usage
+## Usage 
 
 1. **Run the script**:
 
