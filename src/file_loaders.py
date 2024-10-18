@@ -62,9 +62,16 @@ class PDFLoader(FileLoader):
 
     def load(self):
         """Loads the PDF file and returns the document object."""
-        self.validate_extension()
-        self.doc = fitz.open(self.file_path)
-        return self.doc
+        try:
+            self.validate_extension()
+            self.doc = fitz.open(self.file_path)
+            return self.doc
+        except ValueError as e:
+            print(f"Error in validation: {e}")
+            return None
+        except Exception as e:
+            print(f"Failed to load PDF file: {e}")
+            return None
 
 
 class DOCXLoader(FileLoader):
@@ -89,9 +96,16 @@ class DOCXLoader(FileLoader):
 
     def load(self):
         """Loads the DOCX file and returns the document object."""
-        self.validate_extension()
-        self.doc = docx.Document(self.file_path)
-        return self.doc
+        try:
+            self.validate_extension()
+            self.doc = docx.Document(self.file_path)
+            return self.doc
+        except ValueError as e:
+            print(f"Error in validation: {e}")
+            return None
+        except Exception as e:
+            print(f"Failed to load DOCX file: {e}")
+            return None
 
 
 class PPTLoader(FileLoader):
@@ -116,9 +130,16 @@ class PPTLoader(FileLoader):
 
     def load(self):
         """Loads the PPTX file and returns the presentation object."""
-        self.validate_extension()
-        self.presentation = Presentation(self.file_path)
-        return self.presentation
+        try:
+            self.validate_extension()
+            self.presentation = Presentation(self.file_path)
+            return self.presentation
+        except ValueError as e:
+            print(f"Error in validation: {e}")
+            return None
+        except Exception as e:
+            print(f"Failed to load PPTX file: {e}")
+            return None
 
 
 class FileLoaderRegistry:
@@ -174,3 +195,4 @@ class FileLoaderRegistry:
             or None if the file extension is not registered.
         """
         return self.loader_map.get(file_extension)
+
