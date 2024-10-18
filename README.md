@@ -45,7 +45,7 @@ Assignment 3 : Python
 
    ```bash
    cd src
-   python3 extractor.py
+   python3 main.py
    ```
 
    Prompted to enter the filename (with extension) of the document to process. Ensure the file is located in the appropriate directory i.e Documents.
