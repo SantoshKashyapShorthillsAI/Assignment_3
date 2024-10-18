@@ -1,8 +1,0 @@
-2024-10-15 14:16:39,783 - INFO - Test case for logging.
-2024-10-15 14:16:39,784 - INFO - PDFLoader: Valid PDF file test passed.
-2024-10-15 14:16:39,785 - INFO - PDFLoader: Invalid file format test passed.
-2024-10-15 14:16:39,787 - INFO - PDFLoader: PDF loading test passed.
-2024-10-15 14:16:39,788 - INFO - DOCXLoader: Valid DOCX file test passed.
-2024-10-15 14:16:39,789 - INFO - DOCXLoader: DOCX loading test passed.
-2024-10-15 14:16:39,790 - INFO - PPTLoader: Valid PPTX file test passed.
-2024-10-15 14:16:39,797 - INFO - PPTLoader: PPTX loading test passed.

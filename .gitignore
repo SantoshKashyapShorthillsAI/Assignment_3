@@ -4,9 +4,13 @@ __pycache__/
 *.pyo
 *.pyd
 
+*.pyc
+__pycache__/
+
 # Ignore virtual environments
 venv/
 env/
+.venv/
 
 # Ignore .env file
 .env
@@ -14,3 +18,14 @@ env/
 # Ignore IDE-specific files
 .vscode/
 .idea/
+
+
+build/
+dist/
+*.egg-info/
+
+.pytest_cache/
+
+Thumbs.db 
+
+*.log
