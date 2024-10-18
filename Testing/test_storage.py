@@ -2,11 +2,16 @@ import pytest
 import os
 import logging
 from unittest.mock import MagicMock
-
 import sys
-sys.path.append("/home/shtlp_0103/Assignment_3")
-from src.extractor import PDFLoader, DOCXLoader, PPTLoader, DataExtractor, FileStorage, MySQLStorage
+import os
 
+# Append the src directory to the system path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from file_loaders import PDFLoader, DOCXLoader, PPTLoader
+
+from data_extractor import DataExtractor
+from storage import FileStorage, MySQLStorage
 
 # Sample PDF, DOCX, and PPTX paths
 pdf_path = '/home/shtlp_0103/Assignment_3/Documents/sample.pdf'

@@ -2,10 +2,16 @@ import pytest
 import os
 import logging
 from unittest.mock import MagicMock
-
 import sys
-sys.path.append("/home/shtlp_0103/Assignment_3")
-from src.extractor import PDFLoader, DOCXLoader, PPTLoader, DataExtractor, FileStorage, MySQLStorage
+import os
+
+# Append the src directory to the system path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from file_loaders import PDFLoader, DOCXLoader, PPTLoader
+
+from data_extractor import DataExtractor
+from storage import FileStorage, MySQLStorage
 
 
 # Sample PDF, DOCX, and PPTX paths
@@ -137,67 +143,67 @@ def test_extract_images_pdf(pdf_loader_mock):
     assert len(images_data) == 1  # Expecting one image
     assert images_data[0]["image_extension"] == "png"
 
-# def test_extract_tables_pdf(pdf_loader_mock):
-#     extractor = DataExtractor(pdf_loader_mock)
-#     tables_data = extractor.extract_tables()
-#     assert len(tables_data) == 1  # Expecting one table
-#     assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
+def test_extract_tables_pdf(pdf_loader_mock):
+    extractor = DataExtractor(pdf_loader_mock)
+    tables_data = extractor.extract_tables()
+    assert len(tables_data) == 1  # Expecting one table
+    assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
 
-# def test_extract_text_docx(docx_loader_mock):
-#     extractor = DataExtractor(docx_loader_mock)
-#     text_data = extractor.extract_text()
-#     assert len(text_data) == 1
-#     assert text_data[0]["text"] == "Sample DOCX text."
+def test_extract_text_docx(docx_loader_mock):
+    extractor = DataExtractor(docx_loader_mock)
+    text_data = extractor.extract_text()
+    assert len(text_data) == 1
+    assert text_data[0]["text"] == "Sample DOCX text."
 
-# def test_extract_links_docx(docx_loader_mock):
-#     extractor = DataExtractor(docx_loader_mock)
-#     link_data = extractor.extract_links()
-#     assert len(link_data) == 1
-#     assert link_data[0]["url"] == "http://example.com"
+def test_extract_links_docx(docx_loader_mock):
+    extractor = DataExtractor(docx_loader_mock)
+    link_data = extractor.extract_links()
+    assert len(link_data) == 1
+    assert link_data[0]["url"] == "http://example.com"
 
-# def test_extract_images_docx(docx_loader_mock):
-#     extractor = DataExtractor(docx_loader_mock)
-#     images_data = extractor.extract_images()
-#     assert len(images_data) == 1
-#     assert images_data[0]["image_extension"] == "jpeg"
+def test_extract_images_docx(docx_loader_mock):
+    extractor = DataExtractor(docx_loader_mock)
+    images_data = extractor.extract_images()
+    assert len(images_data) == 1
+    assert images_data[0]["image_extension"] == "jpeg"
 
-# def test_extract_tables_docx(docx_loader_mock):
-#     extractor = DataExtractor(docx_loader_mock)
-#     tables_data = extractor.extract_tables()
-#     assert len(tables_data) == 1
-#     assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
+def test_extract_tables_docx(docx_loader_mock):
+    extractor = DataExtractor(docx_loader_mock)
+    tables_data = extractor.extract_tables()
+    assert len(tables_data) == 1
+    assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
 
-# def test_extract_text_ppt(ppt_loader_mock):
-#     extractor = DataExtractor(ppt_loader_mock)
-#     text_data = extractor.extract_text()
-#     assert len(text_data) == 1
-#     assert text_data[0]["text"] == "Sample PPT text."
+def test_extract_text_ppt(ppt_loader_mock):
+    extractor = DataExtractor(ppt_loader_mock)
+    text_data = extractor.extract_text()
+    assert len(text_data) == 1
+    assert text_data[0]["text"] == "Sample PPT text."
 
-# def test_extract_links_ppt(ppt_loader_mock):
-#     extractor = DataExtractor(ppt_loader_mock)
-#     link_data = extractor.extract_links()
-#     assert len(link_data) == 1
-#     assert link_data[0]["url"] == "http://example.com"
+def test_extract_links_ppt(ppt_loader_mock):
+    extractor = DataExtractor(ppt_loader_mock)
+    link_data = extractor.extract_links()
+    assert len(link_data) == 1
+    assert link_data[0]["url"] == "http://example.com"
 
-# def test_extract_images_ppt(ppt_loader_mock):
-#     extractor = DataExtractor(ppt_loader_mock)
-#     images_data = extractor.extract_images()
-#     assert len(images_data) == 1
-#     assert images_data[0]["image_extension"] == "bmp"
+def test_extract_images_ppt(ppt_loader_mock):
+    extractor = DataExtractor(ppt_loader_mock)
+    images_data = extractor.extract_images()
+    assert len(images_data) == 1
+    assert images_data[0]["image_extension"] == "bmp"
 
-# def test_extract_tables_ppt(ppt_loader_mock):
-#     extractor = DataExtractor(ppt_loader_mock)
-#     tables_data = extractor.extract_tables()
-#     assert len(tables_data) == 1
-#     assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
+def test_extract_tables_ppt(ppt_loader_mock):
+    extractor = DataExtractor(ppt_loader_mock)
+    tables_data = extractor.extract_tables()
+    assert len(tables_data) == 1
+    assert tables_data[0]["table"] == [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]
 
 # # Test cases for DataExtractor class
-# def test_extract_text_pdf(mocker):
-#     pdf_loader = PDFLoader(pdf_path)
-#     mocker.patch('fitz.open', return_value=MagicMock())
-#     extractor = DataExtractor(pdf_loader)
-#     mock_extract = mocker.patch.object(extractor, '_extract_pdf_text', return_value=[{'page_number': 1, 'text': 'Sample text'}])
-#     text = extractor.extract_text()
-#     assert text == [{'page_number': 1, 'text': 'Sample text'}], "DataExtractor: Text extraction failed."
-#     logging.info("DataExtractor: PDF text extraction test passed.")
-#     mock_extract.assert_called_once()
+def test_extract_text_pdf(mocker):
+    pdf_loader = PDFLoader(pdf_path)
+    mocker.patch('fitz.open', return_value=MagicMock())
+    extractor = DataExtractor(pdf_loader)
+    mock_extract = mocker.patch.object(extractor, '_extract_pdf_text', return_value=[{'page_number': 1, 'text': 'Sample text'}])
+    text = extractor.extract_text()
+    assert text == [{'page_number': 1, 'text': 'Sample text'}], "DataExtractor: Text extraction failed."
+    logging.info("DataExtractor: PDF text extraction test passed.")
+    mock_extract.assert_called_once()
